@@ -1,20 +1,38 @@
-import requests
+import random
+import time
 
-API_key = "5f5b549f759c10516a85f32b"
 
-def hamta_valutakurs(fran="SEK", till="USD"):
-    url = f"https://v6.exchangerate-api.com/v6/{API_key}/latest/{fran}"
+class Quiz:
+    def __init__(self, fragor):
+        self.fragor = fragor
+        self.poang = 0
 
-    try:
-        response = requests.get(url)
-        data = response.json()
+    def starta(self):
+        if not self.fragor:
+            print("Inga frågor!")
+            return 0, 0
 
-        if data.get("result") == "success":
-            return data["conversion_rates"].get(till)
-        
-        else:
-            print("Fel från API.")
-            return None
-    except Exception as e:
-        print("API-fel:", e)
-        return None
+        random.shuffle(self.fragor)
+        start = time.time()
+
+        for fraga in self.fragor:
+            fraga.visa()
+
+            try:
+                svar = int(input("Ditt svar: "))
+
+                if fraga.kontrollera(svar):
+                    print("Rätt!")
+                    self.poang += 1
+                else:
+                    print(f"Fel! Rätt svar: {fraga.korrekt}")
+
+            except:
+                print("Ogiltigt svar!")
+
+        tid = round(time.time() - start, 2)
+
+        print(f"\nPoäng: {self.poang}/{len(self.fragor)}")
+        print(f"Tid: {tid} sekunder")
+
+        return self.poang, tid
