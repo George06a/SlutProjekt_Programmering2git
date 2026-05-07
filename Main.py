@@ -1,7 +1,7 @@
 from quiz import Quiz
 from api import hamta_API_fragor
 from highscore import Highscore
-from fragbank import Fragbank
+from Offlinefragor import Fragbank
 
 
 def meny():

@@ -1,38 +1,42 @@
+import requests
 import random
-import time
+from fraga import Fraga
 
 
-class Quiz:
-    def __init__(self, frågor):
-        self.frågor = frågor
-        self.poäng = 0
+def hamta_API_fragor(antal=5, kategori=None, svarighet=None):
+    url = "https://opentdb.com/api.php"
 
-    def starta(self):
-        if not self.frågor:
-            print("Inga frågor!")
-            return 0, 0
+    params = {
+        "amount": antal,
+        "type": "multiple"
+    }
 
-        random.shuffle(self.frågor)
-        start = time.time()
+    if kategori:
+        params["category"] = kategori
 
-        for fråga in self.frågor:
-            fråga.visa()
+    if svarighet:
+        params["difficulty"] = svarighet
 
-            try:
-                svar = int(input("Ditt svar: "))
+    try:
+        response = requests.get(url, params=params)
+        data = response.json()
 
-                if fråga.kontrollera(svar):
-                    print("Rätt!")
-                    self.poang += 1
-                else:
-                    print(f"Fel! Rätt svar: {fråga.korrekt}")
+        if data["response_code"] != 0:
+            print("Inga frågor hittades!")
+            return []
 
-            except:
-                print("Ogiltigt svar!")
+        fragor = []
 
-        tid = round(time.time() - start, 2)
+        for item in data["results"]:
+            alternativ = item["incorrect_answers"] + [item["correct_answer"]]
+            random.shuffle(alternativ)
 
-        print(f"\nPoäng: {self.poang}/{len(self.frågor)}")
-        print(f"Tid: {tid} sekunder")
+            fragor.append(
+                Fraga(item["question"], alternativ, item["correct_answer"])
+            )
 
-        return self.poang, tid
+        return fragor
+
+    except:
+        print("Kunde inte hämta frågor från API!")
+        return []
